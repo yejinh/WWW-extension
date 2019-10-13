@@ -1,3 +1,52 @@
+const $signIn = document.getElementById('signin-button');
+console.log($signIn);
+let email;
+let name;
+const firebaseConfig = {
+  apiKey: 'AIzaSyC91JeOXfKB_Z_z3wml60Vf9SWITurZyFg',
+  authDomain: 'time-tracker-255508.firebaseapp.com',
+  databaseURL: 'https://time-tracker-255508.firebaseio.com',
+  storageBucket: 'time-tracker-255508.appspot.com'
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+const initApp = () => {
+  firebase.auth().onAuthStateChanged(user => {
+    console.log('initApp', user);
+  });
+  $signIn.addEventListener('click', signIn);
+};
+
+const signIn = () => {
+  $signIn.disabled = true;
+
+  if (firebase.auth().currentUser) {
+    firebase.auth().signOut();
+  } else {
+    startAuth(true);
+  }
+};
+
+const startAuth = async() => {
+  try {
+    const provider = new firebase.auth.FacebookAuthProvider();
+    const result = await firebase.auth().signInWithPopup(provider);
+    const { user } = result;
+    email = user.email;
+    name = user.displayName;
+    console.log(email, name);
+  } catch(err) {
+    console.log(err);
+  }
+};
+
+window.onload = () => {
+  initApp();
+};
+
 const urls = [
   '*://*.facebook.com/',
   '*://*.twitter.com/',
@@ -15,10 +64,10 @@ const end = async() => {
 
     $.ajax({
       type: 'PUT',
-      url: 'http://localhost:8080/',
+      url: 'http://localhost:8080/api/projects',
       contentType: "application/json",
       dataType: "json",
-      data: JSON.stringify({ time: timeDiff, domain: domain }),
+      data: JSON.stringify({ time: timeDiff, domain: domain, name: name, email: email }),
       success: res => {
         console.log(res);
       }
@@ -27,7 +76,7 @@ const end = async() => {
     console.log(`${timeDiff} seconds at ${domain}`);
     active = {};
   }
-}
+};
 
 // 도메인이 변경되는 경우
 chrome.tabs.onUpdated.addListener(() => {
