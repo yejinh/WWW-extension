@@ -1,7 +1,5 @@
 const $signIn = document.getElementById('signin-button');
-console.log($signIn);
-let email;
-let name;
+
 const firebaseConfig = {
   apiKey: 'AIzaSyC91JeOXfKB_Z_z3wml60Vf9SWITurZyFg',
   authDomain: 'time-tracker-255508.firebaseapp.com',
@@ -9,11 +7,9 @@ const firebaseConfig = {
   storageBucket: 'time-tracker-255508.appspot.com'
 };
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-
 const initApp = () => {
+  firebase.initializeApp(firebaseConfig);
+
   firebase.auth().onAuthStateChanged(user => {
     console.log('initApp', user);
   });
@@ -21,12 +17,10 @@ const initApp = () => {
 };
 
 const signIn = () => {
-  $signIn.disabled = true;
-
   if (firebase.auth().currentUser) {
     firebase.auth().signOut();
   } else {
-    startAuth(true);
+    startAuth();
   }
 };
 
@@ -35,9 +29,20 @@ const startAuth = async() => {
     const provider = new firebase.auth.FacebookAuthProvider();
     const result = await firebase.auth().signInWithPopup(provider);
     const { user } = result;
-    email = user.email;
-    name = user.displayName;
-    console.log(email, name);
+    const { email } = user;
+
+    $.ajax({
+      type: 'GET',
+      url: `http://localhost:8080/api/projects/${email}`,
+      success: res => {
+        console.log(res);
+        chrome.storage.local.set({ projects: res }, () => {
+          if(chrome.runtime.lastError) {
+            console.error(`${projects} to ${res}: ${chrome.runtime.lastError.message}`);
+          }
+        });
+      }
+    });
   } catch(err) {
     console.log(err);
   }
@@ -56,7 +61,7 @@ const urls = [
 ];
 let active = {};
 
-// 여기서 서버 전송?
+// 데이터 서버 전송
 const end = async() => {
   if (active.name) {
     const timeDiff = parseInt((Date.now() - active.time) / 1000);
@@ -67,7 +72,7 @@ const end = async() => {
       url: 'http://localhost:8080/api/projects',
       contentType: "application/json",
       dataType: "json",
-      data: JSON.stringify({ time: timeDiff, domain: domain, name: name, email: email }),
+      data: JSON.stringify({ time: timeDiff, domain: domain }),
       success: res => {
         console.log(res);
       }
