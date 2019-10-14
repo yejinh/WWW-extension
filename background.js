@@ -1,4 +1,5 @@
 const $signIn = document.getElementById('signin-button');
+let token;
 
 const firebaseConfig = {
   apiKey: 'AIzaSyC91JeOXfKB_Z_z3wml60Vf9SWITurZyFg',
@@ -30,12 +31,27 @@ const startAuth = async() => {
     const result = await firebase.auth().signInWithPopup(provider);
     const { user } = result;
     const { email } = user;
+    const name = user.displayName;
 
-    $.ajax({
+    // login and get token
+    await $.ajax({
+      type: 'POST',
+      url: 'http://localhost:8080/api/auth/authenticate',
+      headers: {'Content-Type': 'application/json'},
+      data: JSON.stringify({ email, name }),
+      success: res => {
+        token = res.access_token;
+      }
+    });
+
+    // get user projects data
+    await $.ajax({
       type: 'GET',
       url: `http://localhost:8080/api/projects/${email}`,
+      beforeSend: function(request) {
+        request.setRequestHeader('Authorization', `Bearer ${token}`);
+      },
       success: res => {
-        console.log(res);
         chrome.storage.local.set({ projects: res }, () => {
           if(chrome.runtime.lastError) {
             console.error(`${projects} to ${res}: ${chrome.runtime.lastError.message}`);
@@ -66,13 +82,16 @@ const end = async() => {
   if (active.name) {
     const timeDiff = parseInt((Date.now() - active.time) / 1000);
     const domain = active.name;
-
+    console.log('end', token);
     $.ajax({
       type: 'PUT',
       url: 'http://localhost:8080/api/projects',
+      // beforeSend: function(request) {
+      //   request.setRequestHeader('Authorization', `Bearer ${token}`);
+      // },
       contentType: "application/json",
       dataType: "json",
-      data: JSON.stringify({ time: timeDiff, domain: domain }),
+      data: JSON.stringify({ time: timeDiff, domain: domain, token: token }),
       success: res => {
         console.log(res);
       }
