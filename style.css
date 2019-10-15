@@ -11,6 +11,10 @@ body {
   outline: none;
 }
 
+#signout-button {
+  display: none;
+}
+
 span {
   border: 1px solid black;
   display: inline-block;

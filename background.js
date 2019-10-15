@@ -1,4 +1,4 @@
-const $signIn = document.getElementById('signin-button');
+const $signInButton = document.getElementById('signin-button');
 let token;
 
 const firebaseConfig = {
@@ -14,7 +14,7 @@ const initApp = () => {
   firebase.auth().onAuthStateChanged(user => {
     console.log('initApp', user);
   });
-  $signIn.addEventListener('click', signIn);
+  $signInButton.addEventListener('click', signIn);
 };
 
 const signIn = () => {

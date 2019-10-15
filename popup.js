@@ -1,5 +1,6 @@
 const $body = document.querySelector('body');
 const $signIn = document.getElementById('signin-button');
+const $signOut = document.getElementById('signout-button');
 
 chrome.storage.local.get('projects', projects => {
   const projectsWrapper = document.createElement('div');
@@ -9,6 +10,7 @@ chrome.storage.local.get('projects', projects => {
     const text = document.createTextNode(project.title);
 
     $signIn.style.display = 'none';
+    $signOut.style.display = 'block';
     span.appendChild(text);
     projectsWrapper.appendChild(span);
   });
@@ -28,19 +30,31 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
       const text = document.createTextNode(project.title);
 
       $signIn.style.display = 'none';
+      $signOut.style.display = 'block';
+
       span.appendChild(text);
       projectsWrapper.appendChild(span);
     });
 
     $body.appendChild(projectsWrapper);
-    // console.log(JSON.parse(storageChange.newValue));
   }
 });
 
+$signOut.addEventListener('click', () => {
+  localStorage.removeItem('WWW');
 
-// chrome.storage.local.clear(function() {
-//   const error = chrome.runtime.lastError;
-//   if (error) {
-//     console.error(error);
-//   }
-// });
+  chrome.storage.local.clear(() => {
+    const error = chrome.runtime.lastError;
+    if (error) {
+      console.error(error);
+    }
+  });
+
+  const $projectsWrapper = document.querySelector('div');
+
+  $body.removeChild($projectsWrapper);
+  $signIn.style.display = 'block';
+  $signOut.style.display = 'none';
+
+  firebase.auth().signOut();
+});
