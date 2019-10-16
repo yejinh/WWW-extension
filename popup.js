@@ -1,60 +1,104 @@
-const $body = document.querySelector('body');
-const $signIn = document.getElementById('signin-button');
-const $signOut = document.getElementById('signout-button');
+const $signIn = $('.signin');
+const $signOut = $('.signout');
+const $userProfile = $('.user-profile');
+const $projectWrapper = $('.project-wrapper');
 
-chrome.storage.local.get('projects', projects => {
-  const projectsWrapper = document.createElement('div');
+// 지속적으로 로그인 된 경우 ?
+chrome.storage.local.get('userData', userData => {
+  if (!userData) return;
 
-  projects.projects.map(project => {
-    const span = document.createElement('span');
-    const text = document.createTextNode(project.title);
+  const { name, profilePhoto } = userData.userData;
+  const photo = $(`<img src="${profilePhoto}?height=70&width=70" />`);
+  const userName = $(`<span>${name}</span>`);
 
-    $signIn.style.display = 'none';
-    $signOut.style.display = 'block';
-    span.appendChild(text);
-    projectsWrapper.appendChild(span);
-  });
+  $signIn.css({ display: 'none' });
+  $signOut.css({ display: 'block' });
+  $userProfile.css({ display: 'block' });
 
-  $body.appendChild(projectsWrapper);
+  $userProfile.append(userName);
+  $userProfile.append(photo);
 });
 
-chrome.storage.onChanged.addListener(function(changes, namespace) {
-  for (let newProjects in changes) {
-    const change = changes[newProjects];
-    const projects = change.newValue;
+// display projects
+chrome.storage.local.get('projects', projects => {
+  if (!Object.keys(projects).length) return;
 
-    const projectsWrapper = document.createElement('div');
+  projects.projects.map(project => {
+    const title = $(`<li>${project.title}</li>`);
+    console.log('local get', project._id);
 
-    projects.map(project => {
-      const span = document.createElement('span');
-      const text = document.createTextNode(project.title);
-
-      $signIn.style.display = 'none';
-      $signOut.style.display = 'block';
-
-      span.appendChild(text);
-      projectsWrapper.appendChild(span);
+    title.bind('click', () => {
+      localStorage.setItem('project', JSON.stringify({
+        project_id: project._id
+      }));
     });
 
-    $body.appendChild(projectsWrapper);
+    $projectWrapper.css({ display: 'block' });
+    $projectWrapper.append(title);
+  });
+});
+
+// 바로 로그인 한 경우 유저 정보와 프로젝트
+chrome.storage.onChanged.addListener(function(changes, namespace) {
+  for (let newData in changes) {
+    const change = changes[newData];
+
+    if (change.newValue.hasOwnProperty('name')) {
+      const user = change.newValue;
+      const { name, profilePhoto } = user;
+
+      const photo = $(`<img src="${profilePhoto}?height=70&width=70" />`);
+      const userName = $(`<span>${name}</span>`);
+
+      $signIn.css({ display: 'none' });
+      $signOut.css({ display: 'block' });
+      $userProfile.css({ display: 'block' });
+
+      $userProfile.append(userName);
+      $userProfile.append(photo);
+      return;
+    }
+
+    const projects = change.newValue;
+
+    projects.map(project => {
+      const title = $(`<li>${project.title}</li>`);
+
+      title.bind('click', () => {
+        localStorage.setItem('project', JSON.stringify({
+          project_id: project._id
+        }));
+      });
+      console.log('onChange', project._id);
+
+      $signIn.css({ display: 'none' });
+      $signOut.css({ display: 'block' });
+
+      $projectWrapper.css({ display: 'block' });
+      $projectWrapper.append(title);
+    });
   }
 });
 
-$signOut.addEventListener('click', () => {
+// 로그아웃
+$signOut.bind('click', () => {
   localStorage.removeItem('WWW');
+  localStorage.removeItem('project');
 
   chrome.storage.local.clear(() => {
     const error = chrome.runtime.lastError;
+
     if (error) {
       console.error(error);
     }
   });
 
-  const $projectsWrapper = document.querySelector('div');
+  $userProfile.remove();
+  $projectWrapper.remove();
 
-  $body.removeChild($projectsWrapper);
-  $signIn.style.display = 'block';
-  $signOut.style.display = 'none';
+  $signIn.css({ display: 'block' });
+  $signOut.css({ display: 'none' });
+
 
   firebase.auth().signOut();
 });
