@@ -6,9 +6,10 @@ const urls = [
   'chrome://'
 ];
 let active = {};
+let domains = {};
 let token;
 let userId;
-let lastHost;
+// let lastHost;
 
 const firebaseConfig = {
   apiKey: 'AIzaSyC91JeOXfKB_Z_z3wml60Vf9SWITurZyFg',
@@ -110,82 +111,56 @@ const startAuth = async() => {
   }
 };
 
-window.onload = () => {
-  initApp();
-};
+window.onload = initApp;
 
-// 데이터 서버 전송
+// // 데이터 서버 전송
 const end = async() => {
-  try {
-    if (Object.keys(active).length) {
-      // const timeDiff = parseInt((Date.now() - active.time) / 1000);
-      // const domain = active.name;
+  if (active.name) {
+    const timeDiff = parseInt((Date.now() - active.time) / 1000);
+    const domain = active.name;
 
-      await getToken();
-      const userData = await JSON.parse(localStorage.getItem('project'));
-      if (!userData) return;
+    await getToken();
+    const userData = await JSON.parse(localStorage.getItem('project'));
+    if (!userData) return;
 
-      console.log(active, '서버 데이터 전송');
-      for(let domain in active) {
-        console.log(active[domain].accTime);
-      }
-      console.log(active);
-      // console.log(timeDiff, domain, '서버 데이터 전송');
-
-      // 여기서 정보 모아주고 throttle 전송
-      // if (timeDiff > 0) {
-      //   if (active.hasOwnProperty(domain)) {
-      //     console.log('hasOwnProperty');
-      //     active[domain] = active[domain] + timeDiff;
-      //   } else {
-      //     console.log('not hasOwnProperty');
-      //     active[domain] = timeDiff;
-      //   }
-      // }
-
-      console.log(active, '서버 데이터 전송');
-
-      // await $.ajax({
-      //   type: 'PUT',
-      //   url: `http://localhost:8080/api/projects/${userData.project_id}`,
-      //   headers: { Authorization: `Bearer ${token}` },
-      //   contentType: "application/json",
-      //   dataType: "json",
-      //   data: JSON.stringify({
-      //     time: timeDiff,
-      //     domain: domain
-      //   }),
-      //   success: res => {
-      //     console.log(res);
-      //   }
-      // });
-
-      // console.log(`${timeDiff} seconds at ${domain}`);
-      // active = {};
+    if (domains.hasOwnProperty(domain)) {
+      domains[domain] += timeDiff;
+    } else {
+      domains[domain] = timeDiff;
     }
-  } catch(err) {
-    console.error(err);
+
+    console.log(domains);
+
+    // $.ajax({
+    //   type: 'PUT',
+    //   url: `http://localhost:8080/${userData.project}`,
+    //   contentType: 'application/json',
+    //   dataType: 'json',
+    //   data: JSON.stringify({ time: timeDiff, domain: domain }),
+    //   success: res => {
+    //     console.log(res);
+    //   }
+    // });
+
+    console.log(`${timeDiff} seconds at ${domain}`);
+    active = {};
   }
 };
 
 // 도메인이 변경되는 경우
 chrome.tabs.onUpdated.addListener(() => {
-  console.log('tabs.onUpdated');
   setActive();
 });
 
 // 탭이 옮겨지는 경우
 chrome.tabs.onActivated.addListener(() => {
-  console.log('tabs.onActivated');
   setActive();
 });
 
 // 브라우저 focus되지 않는 경우
 chrome.windows.onFocusChanged.addListener(window => {
-  console.log('windows.onFocusChanged');
-
   if (window === -1) {
-    // end();
+    end();
   } else {
     setActive();
   }
@@ -193,7 +168,6 @@ chrome.windows.onFocusChanged.addListener(window => {
 
 // 아래의 함수 실행
 const setActive = async() => {
-  console.log('setActive');
   const activeTab = await getActiveTab();
 
   if (activeTab) {
@@ -201,32 +175,10 @@ const setActive = async() => {
     host = host.replace('www.', '').replace('.com', '');
 
     if (!urls.some(url => url.includes(host))) {
-      if (active.hasOwnProperty(host)) {
-        // const timeDiff = Date.now() - active[host].time;
-        const timeDiffLastHost = parseInt((Date.now() - active[lastHost].time) / 1000);
-        const timeDiffCurHost = parseInt((Date.now() - active[host].time) / 1000);
-        console.log('last time diff..', lastHost, timeDiffLastHost);
-        console.log('cur time diff..', host, timeDiffCurHost);
-
-        if (lastHost !== host) {
-          active[lastHost] = {
-            accTime: active[lastHost].accTime + timeDiffLastHost,
-            time: 0
-          };
-        } else {
-          active[host] = {
-            accTime: active[host].accTime + timeDiffCurHost,
-            time: Date.now()
-          };
-        }
-      } else {
-        active[host] = {
-          accTime: 0,
-          time: Date.now()
-        };
+      if (active.name !== host) {
+        end(host);
+        active = { name: host, time: Date.now() };
       }
-      end();
-      lastHost = host;
     }
   }
 };
