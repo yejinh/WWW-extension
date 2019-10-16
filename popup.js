@@ -102,3 +102,23 @@ $signOut.bind('click', () => {
 
   firebase.auth().signOut();
 });
+
+
+
+
+// if (!urls.some(url => url.includes(host))) {
+//   if (active.hasOwnProperty(host)) {
+//     const timeDiff = parseInt((Date.now() - active[host].time) / 1000);
+
+//     active[host] = {
+//       accTime: active[host].accTime + timeDiff,
+//       time: Date.now()
+//     }
+//   } else {
+//     active[host] = {
+//       accTime: 0,
+//       time: Date.now()
+//     }
+//   }
+//   end();
+// }

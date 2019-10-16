@@ -1,5 +1,14 @@
+const urls = [
+  '*://*.facebook.com/',
+  '*://*.twitter.com/',
+  '*://*.instagram.com/',
+  'newtab',
+  'chrome://'
+];
+let active = {};
 let token;
 let userId;
+let lastHost;
 
 const firebaseConfig = {
   apiKey: 'AIzaSyC91JeOXfKB_Z_z3wml60Vf9SWITurZyFg',
@@ -105,41 +114,54 @@ window.onload = () => {
   initApp();
 };
 
-const urls = [
-  '*://*.facebook.com/',
-  '*://*.twitter.com/',
-  '*://*.instagram.com/',
-  'newtab',
-  'chrome://'
-];
-let active = {};
-
 // 데이터 서버 전송
 const end = async() => {
   try {
-    if (active.name) {
-      const timeDiff = parseInt((Date.now() - active.time) / 1000);
-      const domain = active.name;
+    if (Object.keys(active).length) {
+      // const timeDiff = parseInt((Date.now() - active.time) / 1000);
+      // const domain = active.name;
 
       await getToken();
       const userData = await JSON.parse(localStorage.getItem('project'));
       if (!userData) return;
 
-      console.log(userData.project_id, token, 'background');
-      await $.ajax({
-        type: 'PUT',
-        url: `http://localhost:8080/api/projects/${userData.project_id}`,
-        headers: { Authorization: `Bearer ${token}` },
-        contentType: "application/json",
-        dataType: "json",
-        data: JSON.stringify({ time: timeDiff, domain: domain }),
-        success: res => {
-          console.log(res);
-        }
-      });
+      console.log(active, '서버 데이터 전송');
+      for(let domain in active) {
+        console.log(active[domain].accTime);
+      }
+      console.log(active);
+      // console.log(timeDiff, domain, '서버 데이터 전송');
 
-      console.log(`${timeDiff} seconds at ${domain}`);
-      active = {};
+      // 여기서 정보 모아주고 throttle 전송
+      // if (timeDiff > 0) {
+      //   if (active.hasOwnProperty(domain)) {
+      //     console.log('hasOwnProperty');
+      //     active[domain] = active[domain] + timeDiff;
+      //   } else {
+      //     console.log('not hasOwnProperty');
+      //     active[domain] = timeDiff;
+      //   }
+      // }
+
+      console.log(active, '서버 데이터 전송');
+
+      // await $.ajax({
+      //   type: 'PUT',
+      //   url: `http://localhost:8080/api/projects/${userData.project_id}`,
+      //   headers: { Authorization: `Bearer ${token}` },
+      //   contentType: "application/json",
+      //   dataType: "json",
+      //   data: JSON.stringify({
+      //     time: timeDiff,
+      //     domain: domain
+      //   }),
+      //   success: res => {
+      //     console.log(res);
+      //   }
+      // });
+
+      // console.log(`${timeDiff} seconds at ${domain}`);
+      // active = {};
     }
   } catch(err) {
     console.error(err);
@@ -161,8 +183,9 @@ chrome.tabs.onActivated.addListener(() => {
 // 브라우저 focus되지 않는 경우
 chrome.windows.onFocusChanged.addListener(window => {
   console.log('windows.onFocusChanged');
+
   if (window === -1) {
-    end();
+    // end();
   } else {
     setActive();
   }
@@ -178,10 +201,32 @@ const setActive = async() => {
     host = host.replace('www.', '').replace('.com', '');
 
     if (!urls.some(url => url.includes(host))) {
-      if (active.name !== host) {
-        end();
-        active = { name: host, time: Date.now() };
+      if (active.hasOwnProperty(host)) {
+        // const timeDiff = Date.now() - active[host].time;
+        const timeDiffLastHost = parseInt((Date.now() - active[lastHost].time) / 1000);
+        const timeDiffCurHost = parseInt((Date.now() - active[host].time) / 1000);
+        console.log('last time diff..', lastHost, timeDiffLastHost);
+        console.log('cur time diff..', host, timeDiffCurHost);
+
+        if (lastHost !== host) {
+          active[lastHost] = {
+            accTime: active[lastHost].accTime + timeDiffLastHost,
+            time: 0
+          };
+        } else {
+          active[host] = {
+            accTime: active[host].accTime + timeDiffCurHost,
+            time: Date.now()
+          };
+        }
+      } else {
+        active[host] = {
+          accTime: 0,
+          time: Date.now()
+        };
       }
+      end();
+      lastHost = host;
     }
   }
 };
