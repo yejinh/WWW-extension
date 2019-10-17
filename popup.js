@@ -2,6 +2,8 @@ const $signIn = $('.signin');
 const $signOut = $('.signout');
 const $userProfile = $('.user-profile');
 const $projectWrapper = $('.project-wrapper');
+const $startButton = $('.start-button');
+let clicked = false;
 
 // 지속적으로 로그인 된 경우 ?
 chrome.storage.local.get('userData', userData => {
@@ -14,6 +16,7 @@ chrome.storage.local.get('userData', userData => {
   $signIn.css({ display: 'none' });
   $signOut.css({ display: 'block' });
   $userProfile.css({ display: 'block' });
+  $startButton.css({ display: 'block' });
 
   $userProfile.append(userName);
   $userProfile.append(photo);
@@ -21,16 +24,17 @@ chrome.storage.local.get('userData', userData => {
 
 // display projects
 chrome.storage.local.get('projects', projects => {
+  console.log(projects);
   if (!Object.keys(projects).length) return;
 
   projects.projects.map(project => {
     const title = $(`<li>${project.title}</li>`);
-    console.log('local get', project._id);
 
     title.bind('click', () => {
-      localStorage.setItem('project', JSON.stringify({
-        project_id: project._id
-      }));
+      startTracking(project._id);
+
+      title.css({ backgroundColor: '#FA991C' });
+      $startButton.prop('disabled', false).css({ backgroundColor: '#1C768F', color: '#FFFFFF' });
     });
 
     $projectWrapper.css({ display: 'block' });
@@ -53,6 +57,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
       $signIn.css({ display: 'none' });
       $signOut.css({ display: 'block' });
       $userProfile.css({ display: 'block' });
+      $startButton.css({ display: 'block' });
 
       $userProfile.append(userName);
       $userProfile.append(photo);
@@ -65,11 +70,11 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
       const title = $(`<li>${project.title}</li>`);
 
       title.bind('click', () => {
-        localStorage.setItem('project', JSON.stringify({
-          project_id: project._id
-        }));
+        startTracking(project._id);
+
+        title.css({ backgroundColor: '#FA991C' });
+        $startButton.prop('disabled', false).css({ backgroundColor: '#1C768F', color: '#FFFFFF' });
       });
-      console.log('onChange', project._id);
 
       $signIn.css({ display: 'none' });
       $signOut.css({ display: 'block' });
@@ -98,13 +103,18 @@ $signOut.bind('click', () => {
 
   $signIn.css({ display: 'block' });
   $signOut.css({ display: 'none' });
-
+  $startButton.css({ display: 'none' });
 
   firebase.auth().signOut();
 });
 
-
-
+const startTracking = projectId => {
+  $startButton.bind('click', () => {
+    localStorage.setItem('project', JSON.stringify({
+      project_id: projectId
+    }));
+  });
+};
 
 // if (!urls.some(url => url.includes(host))) {
 //   if (active.hasOwnProperty(host)) {
@@ -122,3 +132,4 @@ $signOut.bind('click', () => {
 //   }
 //   end();
 // }
+;
