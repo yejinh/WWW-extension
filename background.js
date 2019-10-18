@@ -6,7 +6,7 @@ const urls = [
   'chrome://'
 ];
 let active = {};
-let domains = {};
+let domains = [];
 let token;
 let userId;
 let projectId;
@@ -75,7 +75,6 @@ const startAuth = async() => {
       headers: {'Content-Type': 'application/json'},
       data: JSON.stringify({ email, name, photoURL }),
       success: res => {
-        console.log(res);
         localStorage.setItem('WWW', JSON.stringify({
           token: res.access_token
         }));
@@ -129,16 +128,30 @@ const startAuth = async() => {
 
 window.onload = initApp;
 
+// $(window).on('load', initApp);
+
 // 데이터 축적
 const end = () => {
   if (active.name) {
     const timeDiff = parseInt((Date.now() - active.time) / 1000);
-    const domain = active.name;
+    const host = active.name;
 
-    if (domains.hasOwnProperty(domain)) {
-      domains[domain] += timeDiff;
-    } else {
-      domains[domain] = timeDiff;
+    if (!domains.length) {
+      return domains.push({ [host]: timeDiff });
+    }
+
+    const hasBeen = domains.map(domain => {
+      if (Object.keys(domain)[0] === host) {
+        domain[host] += timeDiff;
+
+        return true;
+      }
+
+      return false;
+    });
+
+    if (hasBeen.every(been => been === false)) {
+      domains.push({ [host]: timeDiff });
     }
   }
 };

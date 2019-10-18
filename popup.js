@@ -27,6 +27,8 @@ chrome.storage.local.get('projects', projects => {
   console.log(projects);
   if (!Object.keys(projects).length) return;
 
+  console.log(projects, 'test1');
+
   projects.projects.map(project => {
     const title = $(`<li>${project.title}</li>`);
 
@@ -65,7 +67,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
     }
 
     const projects = change.newValue;
-
+    console.log(projects, 'test2');
     projects.map(project => {
       const title = $(`<li>${project.title}</li>`);
 
