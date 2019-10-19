@@ -2,8 +2,17 @@ const $signIn = $('.signin');
 const $signOut = $('.signout');
 const $userProfile = $('.user-profile');
 const $projectWrapper = $('.project-wrapper');
+const $trackingWrapper = $('.tracking-wrapper');
+const $trackingTitle = $('.traking-title');
 const $startButton = $('.start-button');
-let clicked = false;
+
+const isTracking = () => {
+  const projectData = JSON.parse(localStorage.getItem('tracking'));
+
+  if (!projectData) return;
+
+  return projectData;
+};
 
 // 지속적으로 로그인 된 경우 ?
 chrome.storage.local.get('userData', userData => {
@@ -24,19 +33,30 @@ chrome.storage.local.get('userData', userData => {
 
 // display projects
 chrome.storage.local.get('projects', projects => {
-  console.log(projects);
-  if (!Object.keys(projects).length) return;
+  const projectData = isTracking();
 
-  console.log(projects, 'test1');
+  if (projectData && projectData.isTracking) {
+    $startButton.css({ display: 'none' });
+    $projectWrapper.css({ display: 'none' });
+    $trackingWrapper.css({ display: 'block' });
+    $trackingTitle.text(`Tracking Project: ${projectData.title}`);
+    return;
+  };
+
+  if (!Object.keys(projects).length) return;
 
   projects.projects.map(project => {
     const title = $(`<li>${project.title}</li>`);
 
     title.bind('click', () => {
-      startTracking(project._id);
+      startTracking(project._id, project.title);
 
-      title.css({ backgroundColor: '#FA991C' });
+      // $(this).toggleClass('clicked');
       $startButton.prop('disabled', false).css({ backgroundColor: '#1C768F', color: '#FFFFFF' });
+    });
+
+    $('li').click(() => {
+      $(this).toggleClass('clicked');
     });
 
     $projectWrapper.css({ display: 'block' });
@@ -67,15 +87,28 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
     }
 
     const projects = change.newValue;
-    console.log(projects, 'test2');
+    const projectData = isTracking();
+
+    if (projectData && projectData.isTracking) {
+      $startButton.css({ display: 'none' });
+      $projectWrapper.css({ display: 'none' });
+      $trackingWrapper.css({ display: 'block' });
+      $trackingTitle.text(`Tracking Project: ${projectData.title}`);
+      return;
+    };
+
     projects.map(project => {
       const title = $(`<li>${project.title}</li>`);
 
       title.bind('click', () => {
-        startTracking(project._id);
+        startTracking(project._id, project.title);
 
-        title.css({ backgroundColor: '#FA991C' });
+        // $(this).toggleClass('clicked');
         $startButton.prop('disabled', false).css({ backgroundColor: '#1C768F', color: '#FFFFFF' });
+      });
+
+      $('li').click(() => {
+        $(this).toggleClass('clicked');
       });
 
       $signIn.css({ display: 'none' });
@@ -87,10 +120,34 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
   }
 });
 
+// 트래킹 시작
+const startTracking = (projectId, title) => {
+  $startButton.bind('click', () => {
+    chrome.runtime.sendMessage({ message: 'startTracking' });
+
+    localStorage.setItem('project', JSON.stringify({
+      project_id: projectId
+    }));
+
+    $startButton.css({ display: 'none' });
+    $projectWrapper.css({ display: 'none' });
+    $trackingWrapper.css({ display: 'block' });
+    $trackingTitle.text(`Tracking Project: ${title}`);
+
+    localStorage.setItem('tracking', JSON.stringify({
+      isTracking: true,
+      title: title
+    }));
+  });
+};
+
 // 로그아웃
 $signOut.bind('click', () => {
+  chrome.runtime.sendMessage({ message: 'stopTracking' });
+
   localStorage.removeItem('WWW');
   localStorage.removeItem('project');
+  localStorage.removeItem('tracking');
 
   chrome.storage.local.clear(() => {
     const error = chrome.runtime.lastError;
@@ -106,32 +163,7 @@ $signOut.bind('click', () => {
   $signIn.css({ display: 'block' });
   $signOut.css({ display: 'none' });
   $startButton.css({ display: 'none' });
+  $trackingWrapper.css({ display: 'none' });
 
   firebase.auth().signOut();
 });
-
-const startTracking = projectId => {
-  $startButton.bind('click', () => {
-    localStorage.setItem('project', JSON.stringify({
-      project_id: projectId
-    }));
-  });
-};
-
-// if (!urls.some(url => url.includes(host))) {
-//   if (active.hasOwnProperty(host)) {
-//     const timeDiff = parseInt((Date.now() - active[host].time) / 1000);
-
-//     active[host] = {
-//       accTime: active[host].accTime + timeDiff,
-//       time: Date.now()
-//     }
-//   } else {
-//     active[host] = {
-//       accTime: 0,
-//       time: Date.now()
-//     }
-//   }
-//   end();
-// }
-;

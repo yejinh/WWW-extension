@@ -8,6 +8,7 @@ body {
 .wrapper {
   display: flex;
   flex-direction: column;
+  height: 450px;
 }
 
 .header {
@@ -47,7 +48,9 @@ body {
 
 .project-wrapper {
   display: none;
+  height: 280px;
   padding-top: 40px;
+  overflow: auto;
 }
 
 .project-title {
@@ -81,9 +84,14 @@ img {
   border-radius: 15px;
 }
 
+.clicked {
+  background-color: #FA991C
+}
+
 .start-button {
   outline: none;
   border: none;
+  display: none;
   padding: 15px 10px;
   bottom: 10px;
   width: 100%;
@@ -91,4 +99,8 @@ img {
   border-radius: 5px;
   color: #CACABF;
   transition: all .5s ease-in-out;
+}
+
+.tracking-wrapper {
+  display: none;
 }

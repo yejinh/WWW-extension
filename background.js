@@ -10,6 +10,7 @@ let domains = [];
 let token;
 let userId;
 let projectId;
+let timer;
 
 const firebaseConfig = {
   apiKey: 'AIzaSyC91JeOXfKB_Z_z3wml60Vf9SWITurZyFg',
@@ -80,11 +81,10 @@ const startAuth = async() => {
         }));
 
         getToken();
-
-        if (!token) return;
       }
     });
 
+    if (!token) return;
     // get user data
     await $.ajax({
       type: 'GET',
@@ -128,8 +128,6 @@ const startAuth = async() => {
 
 window.onload = initApp;
 
-// $(window).on('load', initApp);
-
 // 데이터 축적
 const end = () => {
   if (active.name) {
@@ -157,28 +155,50 @@ const end = () => {
 };
 
 // 서버 전송
-const sentToServer = () => {
+const updateProject = () => {
+  const data = domains.slice();
+  domains.length = 0;
+
+  domains
   $.ajax({
     type: 'PUT',
     url: `http://localhost:8080/api/projects/${projectId}`,
     headers: { Authorization: `Bearer ${token}` },
     contentType: 'application/json',
     dataType: 'json',
-    data: JSON.stringify(domains),
+    data: JSON.stringify(data),
     success: res => {
       console.log(res);
     }
   });
 };
 
-setInterval(() => {
+const repeat = (func, wait) => {
+  return function(...args) {
+    timer = setInterval(() => {
+      func.apply(this, args);
+    }, wait);
+  };
+};
+
+const dataHandler = repeat(() => {
   getToken();
   getProjectId();
 
   if (!projectId || !token) return;
 
-  sentToServer();
+  updateProject();
 }, 10000);
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.message === 'startTracking') {
+    dataHandler();
+  };
+
+  if (request.message === 'stopTracking') {
+    clearInterval(timer);
+  }
+});
 
 // 도메인이 변경되는 경우
 chrome.tabs.onUpdated.addListener(() => {
