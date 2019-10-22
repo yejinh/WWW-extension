@@ -1,3 +1,4 @@
+const API_URL = 'http://localhost:8080';
 const urls = [
   '*://*.facebook.com/',
   '*://*.twitter.com/',
@@ -11,6 +12,7 @@ let token;
 let userId;
 let projectId;
 let timer;
+let tabsCount;
 
 const firebaseConfig = {
   apiKey: 'AIzaSyC91JeOXfKB_Z_z3wml60Vf9SWITurZyFg',
@@ -72,7 +74,7 @@ const startAuth = async() => {
     // login and get token
     await $.ajax({
       type: 'POST',
-      url: 'http://localhost:8080/api/auth/authenticate',
+      url: `${API_URL}/api/auth/authenticate`,
       headers: {'Content-Type': 'application/json'},
       data: JSON.stringify({ email, name, photoURL }),
       success: res => {
@@ -88,7 +90,7 @@ const startAuth = async() => {
     // get user data
     await $.ajax({
       type: 'GET',
-      url: 'http://localhost:8080/api/users/',
+      url: `${API_URL}/api/users/`,
       headers: { Authorization: `Bearer ${token}` },
       success: res => {
         localStorage.setItem('WWW', JSON.stringify({
@@ -111,7 +113,7 @@ const startAuth = async() => {
     // get logged in user projects
     await $.ajax({
       type: 'GET',
-      url: `http://localhost:8080/api/projects/${userId}`,
+      url: `${API_URL}/api/projects/${userId}`,
       headers: { Authorization: `Bearer ${token}` },
       success: res => {
         chrome.storage.local.set({ projects: res.projects }, () => {
@@ -162,7 +164,7 @@ const updateProject = () => {
   domains
   $.ajax({
     type: 'PUT',
-    url: `http://localhost:8080/api/projects/${projectId}`,
+    url: `${API_URL}/api/projects/${projectId}`,
     headers: { Authorization: `Bearer ${token}` },
     contentType: 'application/json',
     dataType: 'json',
@@ -211,9 +213,14 @@ chrome.tabs.onActivated.addListener(() => {
   setActive();
 });
 
-// 탭이 꺼지는 경우?
+// 탭이 꺼지는 경우
 chrome.tabs.onRemoved.addListener(() => {
   setActive();
+  tabsCount--;
+
+  if (!tabsCount) {
+    logout();
+  }
 });
 
 // 브라우저 focus되지 않는 경우
@@ -224,6 +231,16 @@ chrome.windows.onFocusChanged.addListener(window => {
   } else {
     setActive();
   }
+});
+
+// 탭이 생성되는 경우
+chrome.tabs.onCreated.addListener(() => {
+  tabsCount++;
+});
+
+// number of tabs
+chrome.tabs.query({}, tabs => {
+  tabsCount = tabs.length;
 });
 
 // 아래의 함수 실행
@@ -257,26 +274,16 @@ const getActiveTab = () => {
   });
 };
 
+const logout = () => {
+  localStorage.removeItem('WWW');
+  localStorage.removeItem('project');
+  localStorage.removeItem('tracking');
 
+  chrome.storage.local.clear(() => {
+    const error = chrome.runtime.lastError;
 
-// localStorage.removeItem('WWW');
-// localStorage.removeItem('project');
-// localStorage.removeItem('tracking');
-
-// chrome.storage.local.clear(() => {
-//   const error = chrome.runtime.lastError;
-
-//   if (error) {
-//     console.error(error);
-//   }
-// });
-
-// $userProfile.remove();
-// $projectWrapper.remove();
-
-// $signIn.css({ display: 'block' });
-// $signOut.css({ display: 'none' });
-// $startButton.css({ display: 'none' });
-// $trackingWrapper.css({ display: 'none' });
-
-// firebase.auth().signOut();
+    if (error) {
+      console.error(error);
+    }
+  });
+};

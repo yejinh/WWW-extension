@@ -46,6 +46,10 @@ chrome.storage.local.get('projects', projects => {
   if (!Object.keys(projects).length) return;
 
   projects.projects.map(project => {
+    const now = new Date().toISOString();
+
+    if (project.created_at > now) return;
+
     const title = $(`<li>${project.title}</li>`);
 
     title.bind('click', () => {
@@ -91,11 +95,15 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
       $startButton.css({ display: 'none' });
       $projectWrapper.css({ display: 'none' });
       $trackingWrapper.css({ display: 'block' });
-      $trackingTitle.text(`${projectData.title}`);
+      $trackingTitle.text(projectData.title);
       return;
     };
 
     projects.map(project => {
+      const now = new Date().toISOString();
+
+      if (project.created_at > now) return;
+
       const title = $(`<li>${project.title}</li>`);
 
       title.bind('click', () => {
@@ -127,7 +135,7 @@ const startTracking = (projectId, title) => {
     $startButton.css({ display: 'none' });
     $projectWrapper.css({ display: 'none' });
     $trackingWrapper.css({ display: 'block' });
-    $trackingTitle.text(`Tracking Project: ${title}`);
+    $trackingTitle.text(title);
 
     localStorage.setItem('tracking', JSON.stringify({
       isTracking: true,
