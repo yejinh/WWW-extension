@@ -6,44 +6,68 @@ body {
 }
 
 .wrapper {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 450px;
 }
 
+.login {
+  width: 100%;
+  height: 70px;
+  margin: 30px 0;
+  font-size: 25px;
+  text-align: center;
+}
+
+img {
+  margin-top: 35px;
+}
+
 .header {
-  display: flex;
+  display: none;
   justify-content: space-around;
   align-items: initial;
   width: 100%;
   height: 70px;
+  margin: 10px;
+}
+
+.logo-signout {
+  display: flex;
+  justify-content: space-around;
+  flex-direction: column;
+}
+
+.header span {
+  margin-right: 10px;
 }
 
 .signin {
-  width: 200px;
-  height: 100px;
-  margin: 10px;
-  outline: none;
+  width: 150px;
+  margin: 40px auto;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 18px;
+  background-color: #032539;
+  color: #ffffff;
   cursor: pointer;
 }
 
 .signout {
-  display: none;
   cursor: pointer;
 }
 
-.signin, .signout {
-  width: 100px;
-  height: 50px;
-}
-
-
 .logo {
+  width: 150px;
   font-size: 20px;
 }
 
 .user-profile {
-  display: none;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 20px;
+  text-align: right;
 }
 
 .project-wrapper {
@@ -103,4 +127,10 @@ img {
 
 .tracking-wrapper {
   display: none;
+  margin-top: 30px;
+  text-align: center;
+}
+
+.tracking-gif {
+  width: 250px;
 }

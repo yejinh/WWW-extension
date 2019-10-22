@@ -176,6 +176,7 @@ const updateProject = () => {
 const repeat = (func, wait) => {
   return function(...args) {
     timer = setInterval(() => {
+      console.log('working?');
       func.apply(this, args);
     }, wait);
   };
@@ -188,7 +189,7 @@ const dataHandler = repeat(() => {
   if (!projectId || !token) return;
 
   updateProject();
-}, 10000);
+}, 15000);
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.message === 'startTracking') {
@@ -207,7 +208,6 @@ chrome.tabs.onUpdated.addListener(() => {
 
 // 탭이 옮겨지는 경우
 chrome.tabs.onActivated.addListener(() => {
-  console.log('tab moved?');
   setActive();
 });
 
@@ -250,10 +250,33 @@ const setActive = async() => {
 
 // promise return
 const getActiveTab = () => {
-  console.log('getActiveTab');
   return new Promise(resolve => { chrome.tabs.query({ active: true, currentWindow: true },
     activeTab => {
       resolve(activeTab[0]);
     });
   });
 };
+
+
+
+// localStorage.removeItem('WWW');
+// localStorage.removeItem('project');
+// localStorage.removeItem('tracking');
+
+// chrome.storage.local.clear(() => {
+//   const error = chrome.runtime.lastError;
+
+//   if (error) {
+//     console.error(error);
+//   }
+// });
+
+// $userProfile.remove();
+// $projectWrapper.remove();
+
+// $signIn.css({ display: 'block' });
+// $signOut.css({ display: 'none' });
+// $startButton.css({ display: 'none' });
+// $trackingWrapper.css({ display: 'none' });
+
+// firebase.auth().signOut();

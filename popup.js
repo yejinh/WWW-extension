@@ -1,5 +1,6 @@
-const $signIn = $('.signin');
 const $signOut = $('.signout');
+const $login = $('.login');
+const $header = $('.header');
 const $userProfile = $('.user-profile');
 const $projectWrapper = $('.project-wrapper');
 const $trackingWrapper = $('.tracking-wrapper');
@@ -22,9 +23,8 @@ chrome.storage.local.get('userData', userData => {
   const photo = $(`<img src="${profilePhoto}?height=70&width=70" />`);
   const userName = $(`<span>${name}</span>`);
 
-  $signIn.css({ display: 'none' });
-  $signOut.css({ display: 'block' });
-  $userProfile.css({ display: 'block' });
+  $login.css({ display: 'none' });
+  $header.css({ display: 'flex' });
   $startButton.css({ display: 'block' });
 
   $userProfile.append(userName);
@@ -39,7 +39,7 @@ chrome.storage.local.get('projects', projects => {
     $startButton.css({ display: 'none' });
     $projectWrapper.css({ display: 'none' });
     $trackingWrapper.css({ display: 'block' });
-    $trackingTitle.text(`Tracking Project: ${projectData.title}`);
+    $trackingTitle.text(`${projectData.title}`);
     return;
   };
 
@@ -50,17 +50,16 @@ chrome.storage.local.get('projects', projects => {
 
     title.bind('click', () => {
       startTracking(project._id, project.title);
-
-      // $(this).toggleClass('clicked');
       $startButton.prop('disabled', false).css({ backgroundColor: '#1C768F', color: '#FFFFFF' });
-    });
-
-    $('li').click(() => {
-      $(this).toggleClass('clicked');
     });
 
     $projectWrapper.css({ display: 'block' });
     $projectWrapper.append(title);
+  });
+
+  $('ul li').click(function() {
+    $('ul li').removeClass('clicked');
+    $(this).addClass('clicked');
   });
 });
 
@@ -76,9 +75,8 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
       const photo = $(`<img src="${profilePhoto}?height=70&width=70" />`);
       const userName = $(`<span>${name}</span>`);
 
-      $signIn.css({ display: 'none' });
-      $signOut.css({ display: 'block' });
-      $userProfile.css({ display: 'block' });
+      $login.css({ display: 'none' });
+      $header.css({ display: 'flex' });
       $startButton.css({ display: 'block' });
 
       $userProfile.append(userName);
@@ -93,7 +91,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
       $startButton.css({ display: 'none' });
       $projectWrapper.css({ display: 'none' });
       $trackingWrapper.css({ display: 'block' });
-      $trackingTitle.text(`Tracking Project: ${projectData.title}`);
+      $trackingTitle.text(`${projectData.title}`);
       return;
     };
 
@@ -102,20 +100,17 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 
       title.bind('click', () => {
         startTracking(project._id, project.title);
-
-        // $(this).toggleClass('clicked');
         $startButton.prop('disabled', false).css({ backgroundColor: '#1C768F', color: '#FFFFFF' });
       });
 
-      $('li').click(() => {
-        $(this).toggleClass('clicked');
-      });
-
-      $signIn.css({ display: 'none' });
       $signOut.css({ display: 'block' });
-
       $projectWrapper.css({ display: 'block' });
       $projectWrapper.append(title);
+    });
+
+    $('ul li').click(function() {
+      $('ul li').removeClass('clicked');
+      $(this).addClass('clicked');
     });
   }
 });
@@ -160,8 +155,8 @@ $signOut.bind('click', () => {
   $userProfile.remove();
   $projectWrapper.remove();
 
-  $signIn.css({ display: 'block' });
-  $signOut.css({ display: 'none' });
+  $login.css({ display: 'block' });
+  $header.css({ display: 'none' });
   $startButton.css({ display: 'none' });
   $trackingWrapper.css({ display: 'none' });
 
