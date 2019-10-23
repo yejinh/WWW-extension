@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080';
+const API_URL = 'https://api.wewillwork.in';
 const urls = [
   '*://*.facebook.com/',
   '*://*.twitter.com/',
@@ -84,6 +84,9 @@ const startAuth = async() => {
 
         getToken();
         console.log(token);
+      },
+      error: err => {
+        console.log(err);
       }
     });
 
@@ -180,7 +183,6 @@ const updateProject = () => {
 const repeat = (func, wait) => {
   return function(...args) {
     timer = setInterval(() => {
-      console.log('working?');
       func.apply(this, args);
     }, wait);
   };

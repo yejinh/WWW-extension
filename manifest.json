@@ -1,6 +1,6 @@
 {
   "name": "WWW",
-  "version": "1.0",
+  "version": "1.1",
   "description": "We Will Work",
   "permissions": [
     "tabs",
@@ -10,7 +10,7 @@
     "http://localhost/*"
   ],
   "background": {
-    "scripts": [ "background.js", "jQuery.3.4.1.js" ],
+    "scripts": [ "jQuery.3.4.1.js", "background.js" ],
     "persistent": false
   },
   "browser_action": {
