@@ -83,10 +83,12 @@ const startAuth = async() => {
         }));
 
         getToken();
+        console.log(token);
       }
     });
 
     if (!token) return;
+
     // get user data
     await $.ajax({
       type: 'GET',
@@ -191,7 +193,7 @@ const dataHandler = repeat(() => {
   if (!projectId || !token) return;
 
   updateProject();
-}, 15000);
+}, 30000);
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.message === 'startTracking') {

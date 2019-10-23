@@ -48,17 +48,17 @@ chrome.storage.local.get('projects', projects => {
   projects.projects.map(project => {
     const now = new Date().toISOString();
 
-    if (project.created_at > now) return;
+    if (project.end_date > now) {
+      const title = $(`<li>${project.title}</li>`);
 
-    const title = $(`<li>${project.title}</li>`);
+      title.bind('click', () => {
+        startTracking(project._id, project.title);
+        $startButton.prop('disabled', false).css({ backgroundColor: '#1C768F', color: '#FFFFFF' });
+      });
 
-    title.bind('click', () => {
-      startTracking(project._id, project.title);
-      $startButton.prop('disabled', false).css({ backgroundColor: '#1C768F', color: '#FFFFFF' });
-    });
-
-    $projectWrapper.css({ display: 'block' });
-    $projectWrapper.append(title);
+      $projectWrapper.css({ display: 'block' });
+      $projectWrapper.append(title);
+    }
   });
 
   $('ul li').click(function() {
@@ -102,18 +102,18 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
     projects.map(project => {
       const now = new Date().toISOString();
 
-      if (project.created_at > now) return;
+      if (project.end_date > now) {
+        const title = $(`<li>${project.title}</li>`);
 
-      const title = $(`<li>${project.title}</li>`);
+        title.bind('click', () => {
+          startTracking(project._id, project.title);
+          $startButton.prop('disabled', false).css({ backgroundColor: '#1C768F', color: '#FFFFFF' });
+        });
 
-      title.bind('click', () => {
-        startTracking(project._id, project.title);
-        $startButton.prop('disabled', false).css({ backgroundColor: '#1C768F', color: '#FFFFFF' });
-      });
-
-      $signOut.css({ display: 'block' });
-      $projectWrapper.css({ display: 'block' });
-      $projectWrapper.append(title);
+        $signOut.css({ display: 'block' });
+        $projectWrapper.css({ display: 'block' });
+        $projectWrapper.append(title);
+      }
     });
 
     $('ul li').click(function() {
