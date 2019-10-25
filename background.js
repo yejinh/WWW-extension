@@ -183,6 +183,7 @@ const updateProject = () => {
 const repeat = (func, wait) => {
   return function(...args) {
     timer = setInterval(() => {
+      console.log('send data');
       func.apply(this, args);
     }, wait);
   };
@@ -195,7 +196,7 @@ const dataHandler = repeat(() => {
   if (!projectId || !token) return;
 
   updateProject();
-}, 30000);
+}, 20000);
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.message === 'startTracking') {
