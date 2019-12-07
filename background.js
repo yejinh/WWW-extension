@@ -83,7 +83,6 @@ const startAuth = async() => {
         }));
 
         getToken();
-        console.log(token);
       },
       error: err => {
         console.log(err);
@@ -166,7 +165,6 @@ const updateProject = () => {
   const data = domains.slice();
   domains.length = 0;
 
-  domains
   $.ajax({
     type: 'PUT',
     url: `${API_URL}/api/projects/${projectId}`,
@@ -254,6 +252,8 @@ const setActive = async() => {
     const activeTab = await getActiveTab();
 
     if (activeTab) {
+      if (!activeTab.url) return;
+
       let host = new URL(activeTab.url).hostname;
       host = host.replace('www.', '').replace('.com', '');
 
