@@ -181,7 +181,6 @@ const updateProject = () => {
 const repeat = (func, wait) => {
   return function(...args) {
     timer = setInterval(() => {
-      console.log('send data');
       func.apply(this, args);
     }, wait);
   };

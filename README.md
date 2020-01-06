@@ -168,7 +168,7 @@ Client, Server, Extension을 독립적으로 구분하여 Git repository 관리
 
 
 ## Things to Do
-1. 개발/ 배포 버전 모두 개발자 도구 창을 열고 진행할 때에만 작동하여 원인에 대해 찾아보고 있는 중입니다. [비슷한 이슈](https://stackoverflow.com/questions/52949355/chrome-extension-only-works-with-console-open)
+1. 크롬 익스텐션의 개발/ 배포 버전이 모두 개발자 도구 창을 열고 진행할 때에만 작동하여 원인에 대해 찾아보고 있는 중입니다. [비슷한 이슈](https://stackoverflow.com/questions/52949355/chrome-extension-only-works-with-console-open)
    
 2. 서버 테스트
 
